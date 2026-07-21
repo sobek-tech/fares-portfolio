@@ -1,6 +1,26 @@
 site_name: Fares Elsobky
-site_description: Curriculum Vitae and Portfolio
+site_description: Software engineering and data engineering portfolio of Fares Elsobky
 site_author: Fares Elsobky
+site_url: https://sobek-tech.github.io/fares-portfolio/
 
 theme:
   name: material
+  language: en
+  font: false
+  features:
+    - navigation.top
+
+nav:
+  - Portfolio: index.md
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+
+strict: true
