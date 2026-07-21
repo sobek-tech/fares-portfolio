@@ -1,1 +1,6 @@
-site_name: My Docs
+site_name: Fares Elsobky
+site_description: Curriculum Vitae and Portfolio
+site_author: Fares Elsobky
+
+theme:
+  name: material
