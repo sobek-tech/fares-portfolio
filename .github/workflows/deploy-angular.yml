@@ -1,0 +1,71 @@
+name: Deploy Angular Portfolio
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "portfolio/**"
+      - ".github/workflows/deploy-angular.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-pages-write
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: portfolio/package-lock.json
+
+      - name: Install dependencies
+        working-directory: portfolio
+        run: npm ci
+
+      - name: Build Angular portfolio
+        working-directory: portfolio
+        run: npm run build -- --base-href /fares-portfolio/
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+
+      - name: Copy Angular build
+        shell: bash
+        run: |
+          rm -rf pages/*
+          cp -R portfolio/dist/portfolio/browser/. pages/
+          touch pages/.nojekyll
+
+      - name: Commit deployment
+        working-directory: pages
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add --all
+
+          if git diff --cached --quiet; then
+            echo "No deployment changes."
+            exit 0
+          fi
+
+          git commit -m "deploy: update Angular portfolio"
+          git push origin gh-pages

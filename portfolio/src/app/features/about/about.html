@@ -1,1 +1,27 @@
-<p>about works!</p>
+<section class="section" id="about" aria-labelledby="about-title">
+  <div class="shell about">
+    <app-section-title
+      eyebrow="About me"
+      title="Engineering useful systems from data to deployment"
+      description="A software engineering background shaped by data, automation, and reliable delivery."
+      headingId="about-title"
+    />
+
+    <div class="about__grid">
+      <div class="about__story">
+        @for (paragraph of paragraphs; track paragraph) {
+          <p>{{ paragraph }}</p>
+        }
+      </div>
+
+      <dl class="about__facts">
+        @for (fact of facts; track fact.label) {
+          <div>
+            <dt>{{ fact.label }}</dt>
+            <dd>{{ fact.value }}</dd>
+          </div>
+        }
+      </dl>
+    </div>
+  </div>
+</section>
