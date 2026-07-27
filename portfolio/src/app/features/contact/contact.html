@@ -1,0 +1,34 @@
+<section class="section section--contact" id="contact" aria-labelledby="contact-title">
+  <div class="shell contact">
+    <app-section-title
+      eyebrow="Contact"
+      title="Let’s build something useful"
+      description="I’m open to junior and entry-level opportunities in data engineering, backend development, cloud infrastructure, and DevOps/SRE."
+      align="center"
+      headingId="contact-title"
+    />
+
+    <div class="contact__grid">
+      @for (method of contactMethods; track method.label) {
+        <div class="contact__method">
+          <span>{{ method.label }}</span>
+          @if (method.href) {
+            <a
+              [href]="method.href"
+              [attr.target]="method.external ? '_blank' : null"
+              [attr.rel]="method.external ? 'noopener noreferrer' : null"
+            >
+              {{ method.value }}
+            </a>
+          } @else {
+            <p>{{ method.value }}</p>
+          }
+        </div>
+      }
+    </div>
+
+    <a class="button button--primary contact__cta" href="mailto:Fares.sobky@gmail.com">
+      Send me an email
+    </a>
+  </div>
+</section>

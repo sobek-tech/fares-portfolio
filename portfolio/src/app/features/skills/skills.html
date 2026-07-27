@@ -1,0 +1,23 @@
+<section class="section" id="skills" aria-labelledby="skills-title">
+  <div class="shell">
+    <app-section-title
+      eyebrow="Capabilities"
+      title="Technical skills"
+      description="A practical toolkit spanning software development, data and AI, infrastructure, and delivery."
+      headingId="skills-title"
+    />
+
+    <div class="skills-grid">
+      @for (group of skillGroups; track group.category) {
+        <article class="skill-group">
+          <h3>{{ group.category }}</h3>
+          <div class="skill-group__items">
+            @for (skill of group.skills; track skill) {
+              <span>{{ skill }}</span>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+<section class="section section--muted" id="projects" aria-labelledby="projects-title">
+  <div class="shell">
+    <app-section-title
+      eyebrow="Selected work"
+      title="Academic and engineering projects"
+      description="Applied work across machine learning, enterprise software, backend systems, and cloud delivery."
+      headingId="projects-title"
+    />
+
+    <div class="projects-grid">
+      @for (project of projects; track project.title) {
+        <app-project-card [project]="project" />
+      }
+    </div>
+  </div>
+</section>

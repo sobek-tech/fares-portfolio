@@ -1,0 +1,38 @@
+<section class="hero" id="home" aria-labelledby="hero-title">
+  <div class="hero__glow hero__glow--one" aria-hidden="true"></div>
+  <div class="hero__glow hero__glow--two" aria-hidden="true"></div>
+
+  <div class="shell hero__content">
+    <div class="hero__copy">
+      <p class="hero__eyebrow">Hello, I’m</p>
+      <h1 id="hero-title">{{ name }}</h1>
+      <p class="hero__title">{{ professionalTitle }}</p>
+      <p class="hero__introduction">{{ introduction }}</p>
+
+      <div class="hero__actions">
+        @for (action of actions; track action.label) {
+          <a
+            class="button"
+            [class.button--primary]="action.style === 'primary'"
+            [class.button--secondary]="action.style === 'secondary'"
+            [href]="action.href"
+            [attr.download]="action.download ?? null"
+          >
+            {{ action.label }}
+          </a>
+        }
+      </div>
+    </div>
+
+    <aside class="hero__focus" aria-label="Professional focus">
+      <p>Focused on</p>
+      <ul>
+        <li>Data engineering</li>
+        <li>Backend development</li>
+        <li>Cloud infrastructure</li>
+        <li>DevOps &amp; SRE</li>
+      </ul>
+      <span>Open to junior and entry-level opportunities</span>
+    </aside>
+  </div>
+</section>

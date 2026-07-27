@@ -1,0 +1,24 @@
+@if (project(); as item) {
+  <article class="project-card">
+    <div class="project-card__topline">
+      <span class="project-card__category">{{ item.category }}</span>
+      <span class="project-card__period">{{ item.period }}</span>
+    </div>
+
+    <h3>{{ item.title }}</h3>
+    <p class="project-card__meta">{{ item.organization }} · {{ item.location }}</p>
+    <p class="project-card__description">{{ item.description }}</p>
+
+    <ul class="project-card__highlights">
+      @for (highlight of item.highlights; track highlight) {
+        <li>{{ highlight }}</li>
+      }
+    </ul>
+
+    <div class="project-card__technologies" aria-label="Technologies used">
+      @for (technology of item.technologies; track technology) {
+        <span>{{ technology }}</span>
+      }
+    </div>
+  </article>
+}

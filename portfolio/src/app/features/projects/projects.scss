@@ -1,0 +1,15 @@
+.projects-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+app-project-card {
+  display: block;
+}
+
+@media (max-width: 47rem) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+}
