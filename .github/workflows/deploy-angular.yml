@@ -13,6 +13,8 @@ on:
 permissions:
   contents: write
 
+# Production and preview workflows both modify gh-pages.
+# This prevents them from pushing at the same time.
 concurrency:
   group: github-pages-write
   cancel-in-progress: false
@@ -22,9 +24,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Download the Angular source code from the current branch.
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # Install Node.js.
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -32,28 +36,41 @@ jobs:
           cache: npm
           cache-dependency-path: portfolio/package-lock.json
 
+      # Install exactly the versions stored in package-lock.json.
       - name: Install dependencies
         working-directory: portfolio
         run: npm ci
 
+      # Build production for:
+      # https://sobek-tech.github.io/fares-portfolio/
       - name: Build Angular portfolio
         working-directory: portfolio
         run: npm run build -- --base-href /fares-portfolio/
 
+      # Download the deployment branch into a folder called pages.
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: pages
 
-      - name: Copy Angular build
+      # Delete production files while preserving pr-* preview folders.
+      - name: Replace production deployment
         shell: bash
         run: |
-          rm -rf pages/*
+          find pages \
+            -mindepth 1 \
+            -maxdepth 1 \
+            ! -name ".git" \
+            ! -name ".nojekyll" \
+            ! -name "pr-*" \
+            -exec rm -rf {} +
+
           cp -R portfolio/dist/portfolio/browser/. pages/
           touch pages/.nojekyll
 
-      - name: Commit deployment
+      # Commit the generated production website to gh-pages.
+      - name: Commit production deployment
         working-directory: pages
         shell: bash
         run: |
@@ -63,9 +80,9 @@ jobs:
           git add --all
 
           if git diff --cached --quiet; then
-            echo "No deployment changes."
+            echo "No production changes to deploy."
             exit 0
           fi
 
-          git commit -m "deploy: update Angular portfolio"
+          git commit -m "deploy: update production portfolio"
           git push origin gh-pages
