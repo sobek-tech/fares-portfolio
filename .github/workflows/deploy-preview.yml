@@ -1,0 +1,144 @@
+name: Deploy PR Preview
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+permissions:
+  contents: write
+
+# This uses the same concurrency group as production because
+# both workflows write to the gh-pages branch.
+concurrency:
+  group: github-pages-write
+  cancel-in-progress: false
+
+jobs:
+  deploy-preview:
+    # Run when the PR is opened, reopened, or receives new commits.
+    # Do not run this job when the PR closes.
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code from the pull request.
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+
+      # Install Node.js.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: portfolio/package-lock.json
+
+      # Install Angular dependencies.
+      - name: Install dependencies
+        working-directory: portfolio
+        run: npm ci
+
+      # Build the Angular app under the PR-specific URL.
+      #
+      # PR #5 becomes:
+      # /fares-portfolio/pr-5/
+      - name: Build PR preview
+        working-directory: portfolio
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          npm run build -- \
+            --base-href "/fares-portfolio/pr-${PR_NUMBER}/"
+
+      # Download the gh-pages deployment branch.
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+
+      # Copy the Angular build into pr-<PR number>.
+      - name: Replace PR preview
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          PREVIEW_DIRECTORY="pages/pr-${PR_NUMBER}"
+
+          rm -rf "$PREVIEW_DIRECTORY"
+          mkdir -p "$PREVIEW_DIRECTORY"
+
+          cp -R portfolio/dist/portfolio/browser/. "$PREVIEW_DIRECTORY/"
+          touch pages/.nojekyll
+
+      # Commit the preview deployment to gh-pages.
+      - name: Commit PR preview
+        working-directory: pages
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add --all
+
+          if git diff --cached --quiet; then
+            echo "No preview changes to deploy."
+            exit 0
+          fi
+
+          git commit -m "deploy: update preview for PR ${PR_NUMBER}"
+          git push origin gh-pages
+
+      # Display the preview URL in the workflow logs and summary.
+      - name: Show preview URL
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          PREVIEW_URL="https://sobek-tech.github.io/fares-portfolio/pr-${PR_NUMBER}/"
+
+          echo "Preview URL: $PREVIEW_URL"
+          echo "## PR Preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[$PREVIEW_URL]($PREVIEW_URL)" >> "$GITHUB_STEP_SUMMARY"
+
+  delete-preview:
+    # The pull_request closed event happens both when:
+    # 1. The PR is merged
+    # 2. The PR is closed without merging
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      # Download gh-pages directly into the working directory.
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      # Remove only this PR's preview folder.
+      - name: Delete closed PR preview
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          rm -rf "pr-${PR_NUMBER}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add --all
+
+          if git diff --cached --quiet; then
+            echo "Preview pr-${PR_NUMBER} does not exist."
+            exit 0
+          fi
+
+          git commit -m "deploy: remove preview for PR ${PR_NUMBER}"
+          git push origin gh-pages
