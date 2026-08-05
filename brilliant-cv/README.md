@@ -1,0 +1,1 @@
+typst compile cv.typ --font-path assets/fonts
