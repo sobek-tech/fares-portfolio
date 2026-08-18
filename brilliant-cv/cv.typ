@@ -12,7 +12,7 @@
 
 // Each profile lives in its own folder with a self-contained metadata.toml.
 // Switch profile at compile time:
-//   typst compile cv.typ --input profile=fr
+//   typst compile cv.typ --input profile=en
 #let profile = sys.inputs.at("profile", default: "en")
 #let metadata = toml("profile_" + profile + "/metadata.toml")
 
